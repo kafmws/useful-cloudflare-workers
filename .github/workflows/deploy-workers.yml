@@ -12,6 +12,13 @@ jobs:
     env:
       WORKER_NAME: notification
       CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }} # Enviroment 中定义的 secrets
+      WX_APPID:       ${{ vars.NOTIFICATION_WX_APPID }}
+      WX_SECRET:      ${{ vars.NOTIFICATION_WX_SECRET }}
+      WX_USERID:      ${{ vars.NOTIFICATION_WX_USERID }}
+      API_TOKEN:      ${{ vars.NOTIFICATION_API_TOKEN }}
+      WX_BASE_URL:    ${{ vars.NOTIFICATION_WX_BASE_URL }}
+      WX_TEMPLATE_ID: ${{ vars.NOTIFICATION_WX_TEMPLATE_ID }}
+
 
     steps:
       # - run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
@@ -23,21 +30,19 @@ jobs:
       
       - run: npm install -g wrangler
 
-      # Set Cloudflare vars  # Enviroment 中定义的 secrets 和 variables 都用 ${{ secrets.xx }}
+      # Set Cloudflare vars  # Enviroment 中定义的 secrets 用 ${{ secrets.xx }}， variables 用 ${{ vars.xx }}
       - name: Set Cloudflare secrets and deploy
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }} # Enviroment 中定义的 secrets
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         working-directory: workers/notification
         run: |
-          echo "${{ secrets.NOTIFICATION_WX_APPID }}"       | wrangler --name $WORKER_NAME secret put WX_APPID
-          echo "${{ secrets.NOTIFICATION_WX_SECRET }}"      | wrangler --name $WORKER_NAME secret put WX_SECRET
-          echo "${{ secrets.NOTIFICATION_WX_USERID }}"      | wrangler --name $WORKER_NAME secret put WX_USERID
-          echo "${{ secrets.NOTIFICATION_API_TOKEN }}"      | wrangler --name $WORKER_NAME secret put API_TOKEN
-          echo "${{ secrets.NOTIFICATION_WX_BASE_URL }}"    | wrangler --name $WORKER_NAME secret put WX_BASE_URL
-          echo "${{ secrets.NOTIFICATION_WX_TEMPLATE_ID }}" | wrangler --name $WORKER_NAME secret put WX_TEMPLATE_ID
+          echo $WX_APPID | wrangler --name $WORKER_NAME secret put WX_APPID
+          echo $WX_SECRET | wrangler --name $WORKER_NAME secret put WX_SECRET
+          echo $WX_USERID | wrangler --name $WORKER_NAME secret put WX_USERID
+          echo $API_TOKEN | wrangler --name $WORKER_NAME secret put API_TOKEN
+          echo $WX_BASE_URL | wrangler --name $WORKER_NAME secret put WX_BASE_URL
+          echo $WX_TEMPLATE_ID | wrangler --name $WORKER_NAME secret put WX_TEMPLATE_ID
           wrangler deploy
         
-      - run: echo "len=$(( ${#API_TOKEN} ))"
-        env:
-          API_TOKEN: ${{ secrets.NOTIFICATION_API_TOKEN }}
+          echo "len=$(( ${#API_TOKEN} ))"
         
