@@ -24,7 +24,10 @@ jobs:
       - run: npm install -g wrangler
 
       # Set Cloudflare vars  # Enviroment 中定义的 secrets 和 variables 都用 ${{ secrets.xx }}
-      - name: Set Cloudflare secrets
+      - name: Set Cloudflare secrets and deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }} # Enviroment 中定义的 secrets
+        working-directory: workers/notification
         run: |
           echo "${{ secrets.NOTIFICATION_WX_APPID }}"       | wrangler --name $WORKER_NAME secret put WX_TEMPLATE_ID
           echo "${{ secrets.NOTIFICATION_WX_SECRET }}"      | wrangler --name $WORKER_NAME secret put WX_TEMPLATE_ID
@@ -32,7 +35,5 @@ jobs:
           echo "${{ secrets.NOTIFICATION_API_TOKEN }}"      | wrangler --name $WORKER_NAME secret put API_TOKEN
           echo "${{ secrets.NOTIFICATION_WX_BASE_URL }}"    | wrangler --name $WORKER_NAME secret put WX_BASE_URL
           echo "${{ secrets.NOTIFICATION_WX_TEMPLATE_ID }}" | wrangler --name $WORKER_NAME secret put WX_TEMPLATE_ID
-      
-      - name: Deploy worker
-        run: wrangler deploy
-        working-directory: workers/notification
+          wrangler deploy
+        
