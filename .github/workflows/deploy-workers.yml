@@ -39,5 +39,5 @@ jobs:
         
       - run: echo "len=$(( ${#API_TOKEN} ))"
         env:
-          API_TOKEN: ${{ secrets.API_TOKEN }}
+          API_TOKEN: ${{ secrets.NOTIFICATION_API_TOKEN }}
         
