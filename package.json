@@ -1,0 +1,8 @@
+{
+  "workspaces": [
+    "workers/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^25.3.5"
+  }
+}
