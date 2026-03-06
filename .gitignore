@@ -6,6 +6,8 @@ node_modules/
 dist/
 worker/
 build/
+worker-configuration.d.ts
+wrangler-test.toml
 
 # TypeScript build artifacts
 *.tsbuildinfo
