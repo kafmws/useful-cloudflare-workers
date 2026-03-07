@@ -44,5 +44,3 @@ jobs:
           echo $WX_TEMPLATE_ID | wrangler --name $WORKER_NAME secret put WX_TEMPLATE_ID
           wrangler deploy
         
-          echo "len=$(( ${#API_TOKEN} ))"
-        

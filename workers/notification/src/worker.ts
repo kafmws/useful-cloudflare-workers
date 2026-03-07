@@ -78,6 +78,11 @@ async function getParams(request: Request): Promise<RequestParams> {
   return { ...urlParams, ...bodyParams };
 }
 
+const channelMap = {
+  'wechat': handleWeChat,
+  'unsupported': (params: RequestParams, env: Env) => new Response("unsupported channel", {status: 400})
+} as const;
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
@@ -89,56 +94,52 @@ export default {
       return handleHomePage();
     }
 
-    // If path is a single segment like '/<token>', serve an interactive test page
-    // but ignore reserved paths like '/send' and '/index.html'
-    const singleSeg = url.pathname.match(/^\/([^\/]+)\/?$/);
-    if (singleSeg && singleSeg[1] && singleSeg[1] !== 'send' && singleSeg[1] !== 'index.html'
-      && singleSeg[1] !== 'index.htm' && singleSeg[1] !== 'index.jsp' && singleSeg[1] !== 'view'
-    ) {
-      const rawTokenFromPath = singleSeg[1];
-      return handleTestPage(rawTokenFromPath, env);
-    }
-
-    if (url.pathname === '/send') {
-      // handle message sending on '/send'
-      return handleSend(request, env);
-    } else if (url.pathname === '/view') {
+    if (url.pathname === '/view') {
       // handle message viewing on '/view'
       return handleView(request, env);
     }
 
+    // Authentication begins
+    // Use the new helper function to get all parameters
+    const params = await getParams(request);
+    // token can come from body/url params or from Authorization header
+    let requestToken = params.token;
+    if (!requestToken) {
+    const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
+        if (authHeader) {
+            // support formats: 'Bearer <token>' or raw token
+            const parts = authHeader.split(' ');
+            requestToken = parts.length === 2 && /^Bearer$/i.test(parts[0]) ? parts[1] : authHeader;
+        }
+    }
+
+    if (requestToken !== env.API_TOKEN || !requestToken) {
+        const responseBody = { msg: 'Invalid token' };
+        return new Response(JSON.stringify(responseBody), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        });
+    }
+
+    // If path is a single segment like '/test?token=' or 'Authorization Bearer token' , 
+    // serve an interactive test page
+    const singleSeg = url.pathname.match(/^\/([^\/]+)\/?$/);
+    if (singleSeg && singleSeg[1] && singleSeg[1] === 'test') {
+      return handleTestPage(requestToken, env);
+    }
+
+    // handle message sending on '/send' and any '/xx' as channel 'xx'
+    if (url.pathname !== '/send') {
+      params.channel = url.pathname.substring(1)
+    }
+    return handleSend(params, env);
+
     // For any other path/method, return 404
-    return new Response('Not Found', { status: 404 });
+    // return new Response('Not Found', { status: 404 });
   }
 };
 
-async function handleSend(request: Request, env: Env): Promise<Response> {
-  // Use the new helper function to get all parameters
-  const params = await getParams(request);
-  // token can come from body/url params or from Authorization header
-  let requestToken = params.token;
-  if (!requestToken) {
-  const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
-      if (authHeader) {
-          // support formats: 'Bearer <token>' or raw token
-          const parts = authHeader.split(' ');
-          requestToken = parts.length === 2 && /^Bearer$/i.test(parts[0]) ? parts[1] : authHeader;
-      }
-  }
-
-  if (requestToken !== env.API_TOKEN || !requestToken) {
-      const responseBody = { msg: 'Invalid token' };
-      return new Response(JSON.stringify(responseBody), {
-          status: 403,
-          headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      });
-  }
-
-  const channelMap = {
-    'wechat': handleWeChat,
-    'unsupported': (params: RequestParams, env: Env) => new Response("unsupported channel", {status: 400})
-  } as const;
-  
+async function handleSend(params: RequestParams, env: Env): Promise<Response> {
   const channel = params.channel as keyof typeof channelMap;
   const handler = channelMap[channel] ?? channelMap.unsupported;
   return handler(params, env);
@@ -251,18 +252,10 @@ async function handleHomePage() {
   return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 }
 
-async function handleTestPage(rawTokenFromPath: string, env: Env) {
-  // 1. Authenticate the token first
-  if (rawTokenFromPath !== env.API_TOKEN) {
-    const responseBody = { msg: 'Invalid token' };
-    return new Response(JSON.stringify(responseBody), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    });
-  }
+async function handleTestPage(tokenMayFromPath: string, env: Env) {
   
   // 2. Sanitize the token for safe embedding into HTML value attributes
-  const sanitizedToken = rawTokenFromPath
+  const sanitizedToken = tokenMayFromPath
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -675,7 +668,7 @@ async function handleView(request: Request, env: Env) {
           </div>
           <div class="message-content">${message}</div>
           <div class="message-footer">
-            <span class="badge">Powered by <a href="https://github.com/kafmws/useful-cloudflare-workers/notification" target="_blank" rel="noopener">useful-cloudflare-workers</a>.</span>
+            <span class="badge">Powered by <a href="https://github.com/kafmws/useful-cloudflare-workers/tree/main/workers/notification" target="_blank" rel="noopener">useful-cloudflare-workers</a>.</span>
           </div>
         </div>
       </body>
