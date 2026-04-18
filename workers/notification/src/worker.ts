@@ -132,18 +132,11 @@ export default {
     if (url.pathname !== '/send') {
       params.channel = url.pathname.substring(1)
     }
-    return handleSend(params, env);
-
-    // For any other path/method, return 404
-    // return new Response('Not Found', { status: 404 });
+    const channel = params.channel as keyof typeof channelMap;
+    const handler = channelMap[channel] ?? channelMap.unsupported;
+    return handler(params, env);
   }
 };
-
-async function handleSend(params: RequestParams, env: Env): Promise<Response> {
-  const channel = params.channel as keyof typeof channelMap;
-  const handler = channelMap[channel] ?? channelMap.unsupported;
-  return handler(params, env);
-}
 
 async function handleHomePage() {
   const html = `

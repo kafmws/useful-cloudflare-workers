@@ -64,10 +64,10 @@ https://notify.kafm.eu.org/channelName?&title=aaa&content=bbb&token=your_token
 | `message` | 消息内容，默认 "无内容信息" |
 | `date` | 时间戳或自定义字符串，默认 "无时间信息" |
 
-**示例**：`/view?title=Hello\u0026message=World\u0026date=2026-03-07`
+**示例**：`/view?title=Hello&message=World&date=2026-03-07`
 
 ### 3. 交互式测试页面
-访问 `/test/token`（token 必须与 `API_TOKEN` 匹配）即可打开一个表单页面，支持手动填写并发送测试请求。
+访问 `/test?token=`（token 必须与 `API_TOKEN` 匹配）即可打开一个表单页面，支持手动填写并发送测试请求。
 
 ## 开发与部署
 1. 安装 Wrangler：`npm i -g @cloudflare/wrangler`  

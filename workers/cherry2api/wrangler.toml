@@ -1,0 +1,7 @@
+name = "cherry2api"
+main = "src/worker.ts"
+
+compatibility_date = "2026-03-06"
+
+[observability]
+enabled = true
