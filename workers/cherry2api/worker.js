@@ -6,7 +6,7 @@
 //    - GET  /v1/models
 //    - POST /v1/chat/completions
 // 2. 对内把请求转发到 Cherry AI 上游：
-//    - https://api.cherry-ai.com/v1/chat/completions
+//    - https://api.cherry-ai.com/chat/completions
 // 3. 通过 HMAC-SHA256 自己给上游请求签名
 // 4. 可选要求调用方提供 CHERRY2API_WORKER_TOKEN 做二次鉴权
 
@@ -21,9 +21,13 @@ const config = {
 
   // 允许使用的模型列表，对外 /v1/models 也会返回这些值。
   models: [
-    'glm-4.5-flash',
+    'deepseek/deepseek-ocr',
     'Qwen/Qwen3-8B',
-    'Qwen/Qwen3-Next-80B-A3B-Instruct',
+    'deepseek/deepseek-v3.2',
+    'z-ai/glm-4.6v',
+    'stepfun-ai/step-3.5-flash',
+    'kwai-kolors/kolors',
+    'baai/bge-m3',
   ],
 
   // Cherry 侧使用的 client id
@@ -274,9 +278,9 @@ async function handleChatCompletions(request) {
   }
 
   const serialized = JSON.stringify(payload);
-  const signedHeaders = await buildCherryHeaders('POST', '/v1/chat/completions', serialized);
+  const signedHeaders = await buildCherryHeaders('POST', '/chat/completions', serialized);
 
-  const upstream = await fetch(`${config.upstreamBaseUrl}/v1/chat/completions`, {
+  const upstream = await fetch(`${config.upstreamBaseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
