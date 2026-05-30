@@ -17,6 +17,9 @@ wrangler-test.toml
 .env.*
 !.env.example
 
+# data
+workers/2fa/data/
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

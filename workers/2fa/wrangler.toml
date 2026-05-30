@@ -1,0 +1,23 @@
+name = "2fa"
+main = "src/cf-worker.ts"
+compatibility_date = "2024-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ── KV ──────────────────────────────────────────────────────────────────
+# 1. Run: wrangler kv namespace create KEYCHAIN
+# 2. Fill in the returned id below
+[[kv_namespaces]]
+binding = "KEYCHAIN"
+id      = "YOUR_KV_NAMESPACE_ID_HERE"
+preview_id = "YOUR_KV_NAMESPACE_PREVIEW_ID_HERE"
+
+# ── Secrets (set via CLI, never commit) ─────────────────────────────────
+# wrangler secret put ADMIN_API_KEY
+# wrangler secret put READONLY_API_KEYS   # comma-separated, optional
+
+# ── Non-secret config ────────────────────────────────────────────────────
+[vars]
+RATE_LIMIT_MAX  = "60"
+RATE_LIMIT_TTL  = "60"
+CORS_ORIGINS    = "*"
+APP_VERSION     = "1.0.0"
