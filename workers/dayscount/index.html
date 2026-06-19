@@ -1,0 +1,291 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0a12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="日子有数" />
+  <meta name="description" content="倒计时与纪念日 · Countdown & Memories" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>日子有数 · Days Count</title>
+  <!-- Google Fonts: Noto Serif SC + DM Serif Display + DM Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+  <script src="vendor/supabase-js-2.108.0.min.js" defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div class="loading-screen" id="loading-screen">
+  <div class="ambient-bg">
+    <div class="ambient-orb"></div>
+    <div class="ambient-orb"></div>
+  </div>
+  <div class="loading-logo">日子有数</div>
+  <div class="loading-spinner-big"></div>
+</div>
+
+<!-- Main App -->
+<div id="app">
+  <div class="ambient-bg">
+    <div class="ambient-orb"></div>
+    <div class="ambient-orb"></div>
+    <div class="ambient-orb"></div>
+  </div>
+
+  <!-- AUTH SCREEN -->
+  <div class="screen" id="auth-screen">
+    <div class="auth-container">
+      <div class="auth-hero">
+        <span class="auth-logo">日子有数</span>
+        <span class="auth-logo-sub" id="auth-tagline">Days Count · Countdown & Memories</span>
+      </div>
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login" type="button">
+            <span id="t-login">登录</span>
+          </button>
+          <button class="auth-tab" id="tab-register" type="button">
+            <span id="t-register">注册</span>
+          </button>
+        </div>
+
+        <div id="login-form">
+          <div class="form-group">
+            <label class="form-label" id="l-email">邮箱</label>
+            <input class="form-input" type="email" id="login-email" placeholder="you@qq.com" autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="l-password">密码</label>
+            <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+          <div class="turnstile-widget is-hidden" id="login-turnstile"></div>
+          <button class="btn-primary" id="btn-login" type="button">
+            <span id="t-loginbtn">登录</span>
+          </button>
+          <div class="auth-error" id="login-error"></div>
+        </div>
+
+        <div id="register-form" class="is-hidden">
+          <div class="form-group">
+            <label class="form-label" id="r-email">邮箱</label>
+            <input class="form-input" type="email" id="reg-email" placeholder="you@qq.com" autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="r-password">密码</label>
+            <input class="form-input" type="password" id="reg-password" placeholder="至少 8 位字符" autocomplete="new-password" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="r-password2">确认密码</label>
+            <input class="form-input" type="password" id="reg-password2" placeholder="再输一次" autocomplete="new-password" />
+          </div>
+          <div class="turnstile-widget is-hidden" id="turnstile-widget"></div>
+          <button class="btn-primary" id="btn-register" type="button">
+            <span id="t-registerbtn">注册账号</span>
+          </button>
+          <div class="auth-error" id="register-error"></div>
+          <div class="auth-success" id="register-success"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP SCREEN -->
+  <div class="screen hidden" id="main-screen">
+    <!-- Header -->
+    <header class="app-header">
+      <span class="header-brand">日子有数</span>
+      <div class="header-actions">
+        <button class="icon-btn lang-btn" id="lang-toggle-btn" type="button" title="切换语言">EN</button>
+        <button class="icon-btn" id="btn-open-menu" type="button" title="菜单">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <span class="search-icon">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <input class="search-input" id="search-input" placeholder="搜索..." />
+      </div>
+    </div>
+
+    <!-- Category chips -->
+    <div class="filter-chip-scroll" id="filter-chips">
+      <button class="chip active" data-filter="all" id="chip-all" type="button">全部</button>
+      <button class="chip" data-filter="upcoming" id="chip-upcoming" type="button">即将到来</button>
+      <button class="chip" data-filter="past" id="chip-past" type="button">已过去</button>
+      <button class="chip" data-filter="today" id="chip-today" type="button">今天</button>
+      <button class="chip" data-filter="annual" id="chip-annual" type="button">周年</button>
+    </div>
+
+    <!-- Record count -->
+    <div class="count-badge" id="record-count-badge"></div>
+
+    <!-- Cards -->
+    <div class="cards-container" id="cards-container">
+      <div class="cards-grid" id="cards-grid"></div>
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🗓️</div>
+        <div class="empty-title" id="empty-title">还没有日子</div>
+        <div class="empty-desc" id="empty-desc">点击右下角的 + 开始记录重要的日子</div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" id="fab" type="button" title="添加">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <!-- DETAIL OVERLAY -->
+  <div class="detail-overlay" id="detail-overlay">
+    <div class="detail-header">
+      <button class="detail-back" id="btn-close-detail" type="button">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M19 12H5M5 12l7 7M5 12l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="detail-title" id="detail-title-text"></div>
+      <button class="icon-btn icon-btn-sm" id="btn-edit-detail" type="button">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="modal-title">添加日子</div>
+      <button class="sheet-close" id="btn-close-add-modal" type="button">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <label class="form-label" id="fl-name">名称</label>
+        <input class="form-input" id="field-name" placeholder="给这个日子起个名字" maxlength="60" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="fl-date">日期</label>
+        <input class="form-input" type="date" id="field-date" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="fl-emoji">图标</label>
+        <div class="emoji-picker-row" id="emoji-picker"></div>
+        <input class="form-input custom-emoji-input" id="field-custom-emoji" placeholder="或输入自定义 emoji" maxlength="8" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="fl-color">颜色</label>
+        <div class="color-picker" id="color-picker"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="fl-note">备注</label>
+        <input class="form-input" id="field-note" placeholder="可选备注" maxlength="200" />
+      </div>
+      <div class="form-group">
+        <div class="toggle-row">
+          <span class="toggle-label" id="fl-annual">是否每年重复</span>
+          <button class="toggle" id="toggle-annual" type="button"></button>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary is-hidden" id="btn-delete-event" type="button">
+          <span id="t-delete">删除</span>
+        </button>
+        <button class="btn-primary flex-1" id="btn-save-event" type="button">
+          <span id="t-save">保存</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU SHEET -->
+<div class="modal-overlay" id="menu-modal">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="t-settings">设置</div>
+      <button class="sheet-close" id="btn-close-menu" type="button">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="user-info-bar" id="user-info-bar">
+        <div class="user-avatar">👤</div>
+        <div>
+          <div class="user-email" id="user-email-display">loading...</div>
+          <div class="user-plan" id="record-count-display"></div>
+        </div>
+      </div>
+      <div class="menu-item" id="btn-export" role="button" tabindex="0">
+        <div class="menu-icon menu-icon-green">📤</div>
+        <div>
+          <div class="menu-label" id="t-export">导出数据</div>
+          <div class="menu-sub" id="t-export-sub">下载为 JSON 文件</div>
+        </div>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item" id="btn-import" role="button" tabindex="0">
+        <div class="menu-icon menu-icon-blue">📥</div>
+        <div>
+          <div class="menu-label" id="t-import">导入数据</div>
+          <div class="menu-sub" id="t-import-sub">从 JSON 文件导入</div>
+        </div>
+        <span class="menu-arrow">›</span>
+      </div>
+      <input type="file" id="import-file" accept=".json" class="is-hidden" />
+      <div class="menu-item" id="btn-logout" role="button" tabindex="0">
+        <div class="menu-icon menu-icon-red">🚪</div>
+        <div class="menu-label text-danger" id="t-logout">退出登录</div>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+
+
+<!-- Supabase SQL Schema (informational comment)
+  Run this in your Supabase SQL Editor to create the required table:
+
+  CREATE TABLE IF NOT EXISTS events (
+    id           TEXT PRIMARY KEY,
+    user_id      UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    name         TEXT NOT NULL,
+    date         DATE NOT NULL,
+    emoji        TEXT DEFAULT '📅',
+    color        TEXT DEFAULT 'orange',
+    note         TEXT DEFAULT '',
+    is_annual    BOOLEAN DEFAULT FALSE,
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+
+  CREATE POLICY "Users can only access their own events"
+    ON events FOR ALL
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+  CREATE INDEX idx_events_user_id ON events(user_id);
+  CREATE INDEX idx_events_date ON events(date);
+-->
+</body>
+</html>
+
+
+

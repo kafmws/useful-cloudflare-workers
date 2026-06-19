@@ -1,0 +1,12 @@
+# Copy to `.dev.vars` for local `wrangler pages dev`. Do NOT commit the real file.
+
+SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx
+
+# For local dev use the Turnstile TEST site key (passes on any host):
+#   1x00000000000000000000AA  -> always passes
+#   2x00000000000000000000AB  -> always blocks
+# Your real, domain-locked key only works on the deployed domain.
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
+
+AUTH_REDIRECT_URL=http://127.0.0.1:8788

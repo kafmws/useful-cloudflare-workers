@@ -1,0 +1,15 @@
+name = "dayscount"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "."
+
+# These are public browser config values exposed by /api/config.
+# Do not put Supabase service_role keys or Turnstile secret keys here.
+[vars]
+SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "YOUR_PUBLISHABLE_KEY"
+TURNSTILE_SITE_KEY = "YOUR_TURNSTILE_SITE_KEY"
+AUTH_REDIRECT_URL = "https://dayscount.pages.dev"
+
+# Wrangler Pages deploy currently rejects rate limit bindings in wrangler.toml.
+# Bind REGISTER_RATE_LIMITER in the Pages project settings or move /api/register
+# to a Worker if this binding must be managed by wrangler.toml.
