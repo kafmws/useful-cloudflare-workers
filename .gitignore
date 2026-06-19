@@ -16,6 +16,11 @@ wrangler-test.toml
 .env
 .env.*
 !.env.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+workers/dayscount/wrangler.toml
+workers/edgetts/wrangler.toml
 
 # data
 workers/2fa/data/
@@ -43,6 +48,9 @@ coverage/
 # Cloudflare Pages functions build output
 .functions/
 
+# Pages clean-deploy staging dir (see workers/dayscount/deploy.sh)
+.deploy-tmp/
+
 # Bun
 bun.lockb
 
@@ -50,3 +58,4 @@ bun.lockb
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+.claude/
